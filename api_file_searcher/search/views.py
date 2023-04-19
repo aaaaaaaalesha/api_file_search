@@ -1,4 +1,6 @@
 import os
+import glob
+import fnmatch
 
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
@@ -25,13 +27,34 @@ class SearchView(APIView):
         """
         Implements searching files in passed directory.
         Searches can be performed:
-            - by the occurrence of a substring of text in the content of the file
+            - by the occurrence of a substring of text in the content of the file;
             - by file_mask in glob format;
             - by file size;
             - by file creation time.
+        :param text: substring whose occurrence is checked in target file contents
+        :param filemask: string file mask with glob format
+        :param size: tuple with two params: file size in bytes and operator (one of 'eq', 'gt', 'lt', 'ge', 'le')
+        :param creation_time: tuple with two params: creation time string in format RFC 3339 and operator
+        (one of 'eq', 'gt', 'lt', 'ge', 'le').
 
+        :return: list of paths matching the search parameters.
         """
-        pass
+        result = []
+        for dirpath, dirnames, filenames in os.walk(search_dir):
+            for filename in filenames:
+                file_path = os.path.join(dirpath, filename)
+                # substr matching
+                with open(file_path, mode='r', encoding='utf-8') as file:
+                    if text in file.read():
+                        pass
+                # file mask matching
+                if fnmatch.fnmatch(file_path, filemask):
+                    pass
+
+                # size matching
+
+                # file creation time matching
+
 
     def post(self, request) -> Response:
         serializer = SearchSerializer(data=request.data)
