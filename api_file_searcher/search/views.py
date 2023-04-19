@@ -56,7 +56,7 @@ class SearchResultView(APIView):
         return Response(
             {
                 'finished': True,
-                'paths': list(search_result.paths),
+                'paths': json.loads(search_result.paths),
             },
             status=status.HTTP_200_OK,
         )

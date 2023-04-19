@@ -4,8 +4,7 @@ import datetime as dt
 
 from fnmatch import fnmatch
 
-# TODO: maybe move it to another place
-SEARCH_DIR = os.getenv('SEARCH_DIR', default='.')
+from django.conf import settings
 
 OPERATOR = {
     'eq': lambda lhs, rhs: lhs == rhs,
@@ -136,7 +135,7 @@ def search(
         filemask: str | None,
         size: dict[str, int | str] | None,
         creation_time: dict[str, str] | None,
-        search_dir=SEARCH_DIR,
+        search_dir=settings.SEARCH_DIR,
 ) -> list[str]:
     """
     Implements searching files in passed directory.
