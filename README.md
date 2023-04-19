@@ -4,12 +4,6 @@
   <a href="https://badgen.net/badge/python/3.10 | 3.11/blue">
       <img src="https://badgen.net/badge/python/3.10 | 3.11/blue" alt="python-version">
   </a>
-
-[//]: # (  <a href="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54">)
-
-[//]: # (    <img alt="Python" src="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54">)
-
-[//]: # (  </a>)
   <a href="https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white">
     <img alt="Django" src="https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white">
   </a>
