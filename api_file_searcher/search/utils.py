@@ -144,17 +144,19 @@ def search(
         - by file_mask in glob format;
         - by file size;
         - by file creation time.
-    :param text: substring whose occurrence is checked in target file contents
-    :param filemask: string file mask with glob format
-    :param size: tuple with two params: file size in bytes and operator (one of 'eq', 'gt', 'lt', 'ge', 'le')
-    :param creation_time: tuple with two params: creation time string in format RFC 3339 and operator
+    :param text: substring whose occurrence is checked in target file contents.
+    :param filemask: string file mask with glob format.
+    :param size: tuple with two params: file size in bytes
+    and operator (one of 'eq', 'gt', 'lt', 'ge', 'le').
+    :param creation_time: tuple with two params: creation time string in
+    format RFC 3339 and operator.
     (one of 'eq', 'gt', 'lt', 'ge', 'le')
     :param search_dir: entrypoint directory of searching files.
 
     :return: list of paths matching the search parameters.
     """
     paths = []
-    for dirpath, _, filenames in os.walk(search_dir):
+    for dirpath, subdirs, filenames in os.walk(search_dir):
         for filename in filenames:
             __collect_matching_files(
                 os.path.join(dirpath, filename),
@@ -166,4 +168,4 @@ def search(
                 collect_to=paths,
             )
 
-        return paths
+    return paths

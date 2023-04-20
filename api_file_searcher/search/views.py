@@ -48,10 +48,7 @@ class SearchResultView(APIView):
         try:
             search_result = Search.objects.get(search_id=search_id)
         except ObjectDoesNotExist:
-            return Response(
-                {'finished': False},
-                status=status.HTTP_200_OK,
-            )
+            return Response({'finished': False}, status=status.HTTP_200_OK)
 
         return Response(
             {
