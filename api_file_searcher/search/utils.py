@@ -29,7 +29,7 @@ def search(
         - by file_mask in glob format;
         - by file size;
         - by file creation time.
-    :param search_params: 
+    :param search_params: dict with passed search parameters:
         - "text" substring whose occurrence is checked in target file contents;
         - "file_mask": string file mask with glob format;
         - "size": dict with two params: file size in bytes
@@ -70,6 +70,7 @@ def __zip_handler(
     with zipfile.ZipFile(filepath, 'r') as zip_file:
         for filename in zip_file.namelist():
             file_info = zip_file.getinfo(filename)
+            # Exclude nested zips.
             if file_info.filename.endswith('.zip'):
                 continue
 
@@ -100,7 +101,9 @@ def __zip_handler(
             # And finally check file content.
             if TEXT_KEY in search_params:
                 with zip_file.open(file_info, mode='r') as file:
-                    if TEXT_KEY not in file.read().decode(errors='ignore'):
+                    if search_params[TEXT_KEY] not in file.read().decode(
+                            encoding='utf-8', errors='ignore'
+                    ):
                         continue
 
             collect_to.append(os.path.join(
@@ -126,7 +129,6 @@ def __collect_matching_files(
     """
     if filepath.endswith('.zip'):
         __zip_handler(filepath, search_params, search_dir, collect_to)
-        return
 
     # Firstly check metadata. Its easier and less complex.
     # Check size of file.
@@ -157,7 +159,7 @@ def __collect_matching_files(
     if TEXT_KEY in search_params:
         with open(filepath, mode='rb') as file:
             if search_params[TEXT_KEY] not in file.read().decode(
-                    'utf-8', errors='ignore'
+                    encoding='utf-8', errors='ignore'
             ):
                 return
 

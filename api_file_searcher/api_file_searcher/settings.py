@@ -6,7 +6,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Root search directory.
-SEARCH_DIR = os.getenv('SEARCH_DIR', default='.')
+SEARCH_DIR = os.getenv(
+    'SEARCH_DIR',
+    default=os.path.join(BASE_DIR, 'tests', 'test_searchdir'),
+)
 
 # Operator mapping.
 OPERATOR = {
@@ -24,9 +27,14 @@ SECRET_KEY = os.getenv(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', default='False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    'testserver',
+]
 
 # Application definition
 

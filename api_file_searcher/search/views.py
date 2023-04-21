@@ -24,7 +24,7 @@ class SearchView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        found_paths: list[str] = search(serializer.data)
+        found_paths = search(serializer.data)
         search_id = uuid.uuid1()
         Search.objects.create(
             search_id=search_id,
