@@ -5,6 +5,18 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Root search directory.
+SEARCH_DIR = os.getenv('SEARCH_DIR', default='.')
+
+# Operator mapping.
+OPERATOR = {
+    'eq': lambda lhs, rhs: lhs == rhs,
+    'gt': lambda lhs, rhs: lhs > rhs,
+    'lt': lambda lhs, rhs: lhs < rhs,
+    'ge': lambda lhs, rhs: lhs >= rhs,
+    'le': lambda lhs, rhs: lhs <= rhs,
+}
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv(
     'SECRET_KEY',
@@ -93,13 +105,3 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-SEARCH_DIR = os.getenv('SEARCH_DIR', default='.')
-
-OPERATOR = {
-    'eq': lambda lhs, rhs: lhs == rhs,
-    'gt': lambda lhs, rhs: lhs > rhs,
-    'lt': lambda lhs, rhs: lhs < rhs,
-    'ge': lambda lhs, rhs: lhs >= rhs,
-    'le': lambda lhs, rhs: lhs <= rhs,
-}

@@ -68,7 +68,8 @@ def __zip_handler(
     :return: None.
     """
     with zipfile.ZipFile(filepath, 'r') as zip_file:
-        for file_info in zip_file.infolist():
+        for filename in zip_file.namelist():
+            file_info = zip_file.getinfo(filename)
             if file_info.filename.endswith('.zip'):
                 continue
 
@@ -84,8 +85,8 @@ def __zip_handler(
                 value = search_params[CREATION_TIME_KEY][VALUE_KEY]
                 operator = search_params[CREATION_TIME_KEY][OPERATOR_KEY]
                 if not settings.OPERATOR[operator](
-                        dt.datetime(*file_info.date_time),
-                        dt.datetime.fromisoformat(value),
+                        dt.datetime(*file_info.date_time).timestamp(),
+                        dt.datetime.fromisoformat(value).timestamp(),
                 ):
                     continue
 
@@ -94,13 +95,13 @@ def __zip_handler(
                     os.path.basename(file_info.filename),
                     search_params[FILE_MASK_KEY],
             ):
-                return
+                continue
 
             # And finally check file content.
             if TEXT_KEY in search_params:
                 with zip_file.open(file_info, mode='r') as file:
                     if TEXT_KEY not in file.read().decode(errors='ignore'):
-                        return
+                        continue
 
             collect_to.append(os.path.join(
                 filepath[len(search_dir) + 1:],
@@ -116,7 +117,8 @@ def __collect_matching_files(
 ) -> None:
     """
     Collects paths to files that satisfy the passed parameters.
-    If the file is a zip archive, searches for files within the archives (excluding nested zip archives).
+    If the file is a zip archive, searches for files within the archives
+    (excluding nested zip archives).
     :param filepath: path to zip file.
     :param search_dir: path to target search directory root.
     :param collect_to: list where suitable files will be collected.
@@ -146,14 +148,17 @@ def __collect_matching_files(
 
     # Check file_mask.
     if FILE_MASK_KEY in search_params and not fnmatch(
-            os.path.basename(filepath), search_params[FILE_MASK_KEY]
+            os.path.basename(filepath),
+            search_params[FILE_MASK_KEY],
     ):
         return
 
     # And finally check file content.
     if TEXT_KEY in search_params:
-        with open(filepath, mode='r', encoding='UTF-8') as file:
-            if search_params[TEXT_KEY] not in file.read():
+        with open(filepath, mode='rb') as file:
+            if search_params[TEXT_KEY] not in file.read().decode(
+                    'utf-8', errors='ignore'
+            ):
                 return
 
     collect_to.append(filepath[len(search_dir) + 1:])

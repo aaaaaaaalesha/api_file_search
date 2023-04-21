@@ -15,16 +15,16 @@ from .utils import search
 
 @action(detail=False, methods=['post'])
 class SearchView(APIView):
-    def post(self, request: Request) -> Response:
+    @staticmethod
+    def post(request: Request) -> Response:
         serializer = SearchSerializer(data=request.data)
         if not serializer.is_valid(raise_exception=True):
             return Response(
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        print(serializer.data)
-        found_paths: list[str] = search(serializer.data)
 
+        found_paths: list[str] = search(serializer.data)
         search_id = uuid.uuid1()
         Search.objects.create(
             search_id=search_id,
@@ -39,7 +39,8 @@ class SearchView(APIView):
 
 @action(detail=False, methods=['get'])
 class SearchResultView(APIView):
-    def get(self, request: Request, search_id: str) -> Response:
+    @staticmethod
+    def get(request: Request, search_id: str) -> Response:
         try:
             search_result = Search.objects.get(search_id=search_id)
         except ObjectDoesNotExist:
