@@ -3,11 +3,11 @@ import zipfile
 import datetime as dt
 
 from fnmatch import fnmatch
-from typing import TypeAlias
+from typing import Any, TypeAlias
 
 from django.conf import settings
 
-SearchParams: TypeAlias = dict[str, dict | str] | None
+SearchParams: TypeAlias = dict[str, dict[str, Any] | str] | None
 
 # Available SearchParams keys.
 TEXT_KEY = 'text'
@@ -41,7 +41,7 @@ def search(
     :return: list of paths matching the search parameters.
     """
     paths = []
-    for dirpath, subdirs, filenames in os.walk(search_dir):
+    for dirpath, _, filenames in os.walk(search_dir):
         for filename in filenames:
             __collect_matching_files(
                 # Construct path to file.
@@ -62,10 +62,10 @@ def __zip_handler(
 ) -> None:
     """
     Search files inside zip file (excluding nested zips).
-    :param filepath:
-    :param search_dir:
-    :param collect_to:
-    :return:
+    :param filepath: path to zip file.
+    :param search_dir: path to target search directory root.
+    :param collect_to: list where suitable files will be collected.
+    :return: None.
     """
     with zipfile.ZipFile(filepath, 'r') as zip_file:
         for file_info in zip_file.infolist():
@@ -74,7 +74,8 @@ def __zip_handler(
 
             # Check size of file.
             if SIZE_KEY in search_params:
-                value, operator = search_params[SIZE_KEY][VALUE_KEY], search_params[SIZE_KEY][OPERATOR_KEY]
+                value = search_params[SIZE_KEY][VALUE_KEY]
+                operator = search_params[SIZE_KEY][OPERATOR_KEY]
                 if not settings.OPERATOR[operator](file_info.file_size, value):
                     continue
 
@@ -90,7 +91,8 @@ def __zip_handler(
 
             # Check file_mask.
             if FILE_MASK_KEY in search_params and not fnmatch(
-                    os.path.basename(file_info.filename), search_params[FILE_MASK_KEY]
+                    os.path.basename(file_info.filename),
+                    search_params[FILE_MASK_KEY],
             ):
                 return
 
@@ -100,7 +102,10 @@ def __zip_handler(
                     if TEXT_KEY not in file.read().decode(errors='ignore'):
                         return
 
-            collect_to.append(os.path.join(filepath[len(search_dir) + 1:], file_info.filename))
+            collect_to.append(os.path.join(
+                filepath[len(search_dir) + 1:],
+                file_info.filename,
+            ))
 
 
 def __collect_matching_files(
@@ -112,10 +117,10 @@ def __collect_matching_files(
     """
     Collects paths to files that satisfy the passed parameters.
     If the file is a zip archive, searches for files within the archives (excluding nested zip archives).
-    :param filepath:
-    :param search_dir:
-    :param collect_to:
-    :return:
+    :param filepath: path to zip file.
+    :param search_dir: path to target search directory root.
+    :param collect_to: list where suitable files will be collected.
+    :return: None.
     """
     if filepath.endswith('.zip'):
         __zip_handler(filepath, search_params, search_dir, collect_to)
