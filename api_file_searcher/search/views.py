@@ -23,7 +23,7 @@ class SearchView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        found_paths = search(
+        found_paths: list[str] = search(
             serializer.data.get('text'),
             serializer.data.get('filemask'),
             serializer.data.get('size'),

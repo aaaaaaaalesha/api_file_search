@@ -6,13 +6,46 @@ from fnmatch import fnmatch
 
 from django.conf import settings
 
-OPERATOR = {
-    'eq': lambda lhs, rhs: lhs == rhs,
-    'gt': lambda lhs, rhs: lhs > rhs,
-    'lt': lambda lhs, rhs: lhs < rhs,
-    'ge': lambda lhs, rhs: lhs >= rhs,
-    'le': lambda lhs, rhs: lhs <= rhs,
-}
+
+def search(
+        text: str | None,
+        filemask: str | None,
+        size: dict[str, int | str] | None,
+        creation_time: dict[str, str] | None,
+        search_dir=settings.SEARCH_DIR,
+) -> list[str]:
+    """
+    Implements searching files in passed directory.
+    Searches can be performed:
+        - by the occurrence of a substring of text in the content of the file;
+        - by file_mask in glob format;
+        - by file size;
+        - by file creation time.
+    :param text: substring whose occurrence is checked in target file contents.
+    :param filemask: string file mask with glob format.
+    :param size: tuple with two params: file size in bytes
+    and operator (one of 'eq', 'gt', 'lt', 'ge', 'le').
+    :param creation_time: tuple with two params: creation time string in
+    format RFC 3339 and operator.
+    (one of 'eq', 'gt', 'lt', 'ge', 'le')
+    :param search_dir: entrypoint directory of searching files.
+
+    :return: list of paths matching the search parameters.
+    """
+    paths = []
+    for dirpath, subdirs, filenames in os.walk(search_dir):
+        for filename in filenames:
+            __collect_matching_files(
+                os.path.join(dirpath, filename),
+                text,
+                filemask,
+                size,
+                creation_time,
+                search_dir,
+                collect_to=paths,
+            )
+
+    return paths
 
 
 def __zip_handler(
@@ -43,13 +76,13 @@ def __zip_handler(
             # Check size of file.
             if size is not None:
                 value, operator = size['value'], size['operator']
-                if not OPERATOR[operator](file_info.file_size, value):
+                if not settings.OPERATOR[operator](file_info.file_size, value):
                     continue
 
             # Check file creation time.
             if creation_time is not None:
                 value, operator = creation_time['value'], creation_time['operator']
-                if not OPERATOR[operator](
+                if not settings.OPERATOR[operator](
                         file_info.date_time,  # TODO: fix mistake
                         dt.datetime.fromisoformat(value).timestamp()
                 ):
@@ -105,13 +138,13 @@ def __collect_matching_files(
     # Check size of file.
     if size is not None:
         value, operator = size['value'], size['operator']
-        if not OPERATOR[operator](os.path.getsize(filepath), value):
+        if not settings.OPERATOR[operator](os.path.getsize(filepath), value):
             return
 
     # Check file creation time.
     if creation_time is not None:
         value, operator = creation_time['value'], creation_time['operator']
-        if not OPERATOR[operator](
+        if not settings.OPERATOR[operator](
                 os.path.getctime(filepath),
                 dt.datetime.fromisoformat(value).timestamp(),
         ):
@@ -128,44 +161,3 @@ def __collect_matching_files(
                 return
 
     collect_to.append(filepath[len(search_dir) + 1:])
-
-
-def search(
-        text: str | None,
-        filemask: str | None,
-        size: dict[str, int | str] | None,
-        creation_time: dict[str, str] | None,
-        search_dir=settings.SEARCH_DIR,
-) -> list[str]:
-    """
-    Implements searching files in passed directory.
-    Searches can be performed:
-        - by the occurrence of a substring of text in the content of the file;
-        - by file_mask in glob format;
-        - by file size;
-        - by file creation time.
-    :param text: substring whose occurrence is checked in target file contents.
-    :param filemask: string file mask with glob format.
-    :param size: tuple with two params: file size in bytes
-    and operator (one of 'eq', 'gt', 'lt', 'ge', 'le').
-    :param creation_time: tuple with two params: creation time string in
-    format RFC 3339 and operator.
-    (one of 'eq', 'gt', 'lt', 'ge', 'le')
-    :param search_dir: entrypoint directory of searching files.
-
-    :return: list of paths matching the search parameters.
-    """
-    paths = []
-    for dirpath, subdirs, filenames in os.walk(search_dir):
-        for filename in filenames:
-            __collect_matching_files(
-                os.path.join(dirpath, filename),
-                text,
-                filemask,
-                size,
-                creation_time,
-                search_dir,
-                collect_to=paths,
-            )
-
-    return paths

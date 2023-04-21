@@ -95,3 +95,11 @@ STATIC_ROOT = BASE_DIR / 'static'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SEARCH_DIR = os.getenv('SEARCH_DIR', default='.')
+
+OPERATOR = {
+    'eq': lambda lhs, rhs: lhs == rhs,
+    'gt': lambda lhs, rhs: lhs > rhs,
+    'lt': lambda lhs, rhs: lhs < rhs,
+    'ge': lambda lhs, rhs: lhs >= rhs,
+    'le': lambda lhs, rhs: lhs <= rhs,
+}
