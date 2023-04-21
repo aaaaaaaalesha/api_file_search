@@ -17,18 +17,13 @@ from .utils import search
 class SearchView(APIView):
     def post(self, request: Request) -> Response:
         serializer = SearchSerializer(data=request.data)
-        if not serializer.is_valid():
+        if not serializer.is_valid(raise_exception=True):
             return Response(
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        found_paths: list[str] = search(
-            serializer.data.get('text'),
-            serializer.data.get('filemask'),
-            serializer.data.get('size'),
-            serializer.data.get('creation time'),
-        )
+        print(serializer.data)
+        found_paths: list[str] = search(serializer.data)
 
         search_id = uuid.uuid1()
         Search.objects.create(

@@ -3,15 +3,23 @@ import zipfile
 import datetime as dt
 
 from fnmatch import fnmatch
+from typing import TypeAlias
 
 from django.conf import settings
 
+SearchParams: TypeAlias = dict[str, dict | str] | None
+
+# Available SearchParams keys.
+TEXT_KEY = 'text'
+FILE_MASK_KEY = 'file_mask'
+SIZE_KEY = 'size'
+CREATION_TIME_KEY = 'creation_time'
+VALUE_KEY = 'value'
+OPERATOR_KEY = 'operator'
+
 
 def search(
-        text: str | None,
-        filemask: str | None,
-        size: dict[str, int | str] | None,
-        creation_time: dict[str, str] | None,
+        search_params: SearchParams,
         search_dir=settings.SEARCH_DIR,
 ) -> list[str]:
     """
@@ -21,13 +29,13 @@ def search(
         - by file_mask in glob format;
         - by file size;
         - by file creation time.
-    :param text: substring whose occurrence is checked in target file contents.
-    :param filemask: string file mask with glob format.
-    :param size: tuple with two params: file size in bytes
-    and operator (one of 'eq', 'gt', 'lt', 'ge', 'le').
-    :param creation_time: tuple with two params: creation time string in
-    format RFC 3339 and operator.
-    (one of 'eq', 'gt', 'lt', 'ge', 'le')
+    :param search_params: 
+        - "text" substring whose occurrence is checked in target file contents;
+        - "file_mask": string file mask with glob format;
+        - "size": dict with two params: file size in bytes
+        and operator (one of 'eq', 'gt', 'lt', 'ge', 'le');
+        - "creation_time" dict with two params: creation time string in
+        format RFC 3339 and operator (one of 'eq', 'gt', 'lt', 'ge', 'le');
     :param search_dir: entrypoint directory of searching files.
 
     :return: list of paths matching the search parameters.
@@ -36,11 +44,9 @@ def search(
     for dirpath, subdirs, filenames in os.walk(search_dir):
         for filename in filenames:
             __collect_matching_files(
+                # Construct path to file.
                 os.path.join(dirpath, filename),
-                text,
-                filemask,
-                size,
-                creation_time,
+                search_params,
                 search_dir,
                 collect_to=paths,
             )
@@ -50,20 +56,13 @@ def search(
 
 def __zip_handler(
         filepath: str,
-        text: str | None,
-        filemask: str | None,
-        size: dict[str, int | str] | None,
-        creation_time: dict[str, str] | None,
+        search_params: SearchParams,
         search_dir: str,
         collect_to: list[str],
 ) -> None:
     """
     Search files inside zip file (excluding nested zips).
     :param filepath:
-    :param text:
-    :param filemask:
-    :param size:
-    :param creation_time:
     :param search_dir:
     :param collect_to:
     :return:
@@ -74,28 +73,31 @@ def __zip_handler(
                 continue
 
             # Check size of file.
-            if size is not None:
-                value, operator = size['value'], size['operator']
+            if SIZE_KEY in search_params:
+                value, operator = search_params[SIZE_KEY][VALUE_KEY], search_params[SIZE_KEY][OPERATOR_KEY]
                 if not settings.OPERATOR[operator](file_info.file_size, value):
                     continue
 
             # Check file creation time.
-            if creation_time is not None:
-                value, operator = creation_time['value'], creation_time['operator']
+            if CREATION_TIME_KEY in search_params:
+                value = search_params[CREATION_TIME_KEY][VALUE_KEY]
+                operator = search_params[CREATION_TIME_KEY][OPERATOR_KEY]
                 if not settings.OPERATOR[operator](
-                        file_info.date_time,  # TODO: fix mistake
-                        dt.datetime.fromisoformat(value).timestamp()
+                        dt.datetime(*file_info.date_time),
+                        dt.datetime.fromisoformat(value),
                 ):
                     continue
 
-            # Check filemask.
-            if filemask is not None and not fnmatch(os.path.basename(file_info.filename), filemask):
+            # Check file_mask.
+            if FILE_MASK_KEY in search_params and not fnmatch(
+                    os.path.basename(file_info.filename), search_params[FILE_MASK_KEY]
+            ):
                 return
 
             # And finally check file content.
-            if text is not None:
+            if TEXT_KEY in search_params:
                 with zip_file.open(file_info, mode='r') as file:
-                    if text not in file.read().decode(errors='ignore'):
+                    if TEXT_KEY not in file.read().decode(errors='ignore'):
                         return
 
             collect_to.append(os.path.join(filepath[len(search_dir) + 1:], file_info.filename))
@@ -103,10 +105,7 @@ def __zip_handler(
 
 def __collect_matching_files(
         filepath: str,
-        text: str | None,
-        filemask: str | None,
-        size: dict[str, int | str] | None,
-        creation_time: dict[str, str] | None,
+        search_params: SearchParams,
         search_dir: str,
         collect_to: list[str],
 ) -> None:
@@ -114,50 +113,42 @@ def __collect_matching_files(
     Collects paths to files that satisfy the passed parameters.
     If the file is a zip archive, searches for files within the archives (excluding nested zip archives).
     :param filepath:
-    :param text:
-    :param filemask:
-    :param size:
-    :param creation_time:
     :param search_dir:
     :param collect_to:
     :return:
     """
     if filepath.endswith('.zip'):
-        __zip_handler(
-            filepath,
-            text,
-            filemask,
-            size,
-            creation_time,
-            search_dir,
-            collect_to,
-        )
+        __zip_handler(filepath, search_params, search_dir, collect_to)
         return
 
     # Firstly check metadata. Its easier and less complex.
     # Check size of file.
-    if size is not None:
-        value, operator = size['value'], size['operator']
+    if SIZE_KEY in search_params:
+        value = search_params[SIZE_KEY][VALUE_KEY]
+        operator = search_params[SIZE_KEY][OPERATOR_KEY]
         if not settings.OPERATOR[operator](os.path.getsize(filepath), value):
             return
 
     # Check file creation time.
-    if creation_time is not None:
-        value, operator = creation_time['value'], creation_time['operator']
+    if CREATION_TIME_KEY in search_params:
+        value = search_params[CREATION_TIME_KEY][VALUE_KEY]
+        operator = search_params[CREATION_TIME_KEY][OPERATOR_KEY]
         if not settings.OPERATOR[operator](
                 os.path.getctime(filepath),
                 dt.datetime.fromisoformat(value).timestamp(),
         ):
             return
 
-    # Check filemask.
-    if filemask is not None and not fnmatch(os.path.basename(filepath), filemask):
+    # Check file_mask.
+    if FILE_MASK_KEY in search_params and not fnmatch(
+            os.path.basename(filepath), search_params[FILE_MASK_KEY]
+    ):
         return
 
     # And finally check file content.
-    if text is not None:
+    if TEXT_KEY in search_params:
         with open(filepath, mode='r', encoding='UTF-8') as file:
-            if text not in file.read():
+            if search_params[TEXT_KEY] not in file.read():
                 return
 
     collect_to.append(filepath[len(search_dir) + 1:])

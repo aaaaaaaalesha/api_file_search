@@ -57,12 +57,12 @@
 ```json
 {
   "text": "abs",
-  "filemask": "*a*.???",
+  "file_mask": "*a*.???",
   "size": {
     "value": 42000,
     "operator": "gt"
   },
-  "creation time": {
+  "creation_time": {
     "value": "2020-03-03T14:00:54Z",
     "operator": "eq"
   }
