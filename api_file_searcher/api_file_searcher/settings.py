@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Root search directory.
 SEARCH_DIR = os.getenv(
     'SEARCH_DIR',
-    default=os.path.join(BASE_DIR, 'tests', 'test_searchdir'),
+    default=os.path.join(BASE_DIR.parent, 'tests', 'test_searchdir'),
 )
 
 # Operator mapping.
@@ -19,6 +19,7 @@ OPERATOR = {
     'ge': lambda lhs, rhs: lhs >= rhs,
     'le': lambda lhs, rhs: lhs <= rhs,
 }
+ACCEPTED_OPERATORS = ('eq', 'gt', 'lt', 'ge', 'le')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv(
@@ -108,8 +109,5 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 
 USE_TZ = True
-
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

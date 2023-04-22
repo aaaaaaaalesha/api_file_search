@@ -1,17 +1,23 @@
 from rest_framework import serializers
+from django.conf import settings
 
 
 class SearchSerializer(serializers.Serializer):
+    class SizeSerializer(serializers.Serializer):
+        value = serializers.IntegerField(required=True)
+        operator = serializers.ChoiceField(
+            choices=settings.ACCEPTED_OPERATORS,
+            default='eq',
+        )
+
+    class CreationTimeSerializer(serializers.Serializer):
+        value = serializers.DateTimeField(required=True)
+        operator = serializers.ChoiceField(
+            choices=settings.ACCEPTED_OPERATORS,
+            default='eq',
+        )
+
     text = serializers.CharField(required=False)
     file_mask = serializers.CharField(required=False)
-    size = serializers.DictField(required=False)
-    creation_time = serializers.DictField(required=False)
-
-    def validate(self, data):
-        # Delete keys 'size' and 'creation_time' if there are no one.
-        if 'size' in data and not data['size']:
-            del data['size']
-        if 'creation_time' in data and not data['creation_time']:
-            del data['creation_time']
-
-        return data
+    size = SizeSerializer(required=False)
+    creation_time = CreationTimeSerializer(required=False)

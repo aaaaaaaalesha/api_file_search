@@ -18,11 +18,7 @@ class SearchView(APIView):
     @staticmethod
     def post(request: Request) -> Response:
         serializer = SearchSerializer(data=request.data)
-        if not serializer.is_valid(raise_exception=True):
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        serializer.is_valid(raise_exception=True)
 
         found_paths = search(serializer.data)
         search_id = uuid.uuid1()

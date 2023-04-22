@@ -1,9 +1,28 @@
+import json
+
 import pytest
 
 
 @pytest.fixture
-def search_params_0():
+def invalid_params():
+    return {
+        "text": 1,
+        "file_mask": False,
+        "size": 10,
+        "creation_time": 10e-10,
+    }
+
+
+@pytest.fixture
+def search_all():
     return {}
+
+
+@pytest.fixture
+def python_files_mask():
+    return {
+        "file_mask": "*.py",
+    }
 
 
 @pytest.fixture
@@ -31,11 +50,4 @@ def search_params_2():
             "value": "2022-09-13T11:00:00Z",
             "operator": "ge",
         }
-    }
-
-
-@pytest.fixture
-def search_python_files():
-    return {
-        "file_mask": "*.py",
     }

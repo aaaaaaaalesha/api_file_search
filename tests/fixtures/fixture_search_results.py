@@ -3,7 +3,7 @@ import pytest
 
 
 @pytest.fixture
-def search_result_0():
+def search_result_all():
     return {
         'finished': True,
         'paths': [
@@ -23,6 +23,17 @@ def search_result_0():
             os.path.join('unrolled_linked_list', 'array.hpp'),
             os.path.join('unrolled_linked_list', 'iterator.hpp'),
             os.path.join('unrolled_linked_list', 'unrolled_linked_list.hpp'),
+        ],
+    }
+
+
+@pytest.fixture
+def python_files_result():
+    return {
+        'finished': True,
+        'paths': [
+            os.path.join('testcompressed.zip', 'dir', 'test_splay_tree.py'),
+            os.path.join('splay_tree', 'splay_tree.py'),
         ],
     }
 
@@ -53,17 +64,5 @@ def search_result_2():
             os.path.join('unordered_map', 'iterator.hpp'),
             os.path.join('unrolled_linked_list', 'array.hpp'),
             os.path.join('unrolled_linked_list', 'iterator.hpp'),
-
-        ],
-    }
-
-
-@pytest.fixture
-def search_python_files_result():
-    return {
-        'finished': True,
-        'paths': [
-            os.path.join('testcompressed.zip', 'dir', 'test_splay_tree.py'),
-            os.path.join('splay_tree', 'splay_tree.py'),
         ],
     }
