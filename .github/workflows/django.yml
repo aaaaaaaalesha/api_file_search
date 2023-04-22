@@ -30,7 +30,9 @@ jobs:
         pytest --cov=./api_file_searcher/search --cov-report xml tests/
         coverage xml -i
 
-    - name: Upload coverage report
-      uses: coverallsapp/github-action@master
+    - name: Upload coverage report to Codecov
+      uses: codecov/codecov-action@v2.1.0
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: coverage.xml
+        flags: pytest
