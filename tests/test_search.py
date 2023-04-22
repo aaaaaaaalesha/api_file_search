@@ -1,4 +1,3 @@
-import json
 import os.path
 import uuid
 
@@ -10,6 +9,7 @@ from rest_framework.test import APIClient
 from search.models import Search
 
 
+@pytest.mark.usefixtures('django_set_search_dir')
 @pytest.mark.django_db
 class TestSearchAPI:
     URL_SEARCH = '/search'

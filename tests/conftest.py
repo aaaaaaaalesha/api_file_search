@@ -27,7 +27,7 @@ if FILENAME not in project_dir_content:
     )
 
 pytest_plugins = [
-    'tests.fixtures.fixture_data',
+    'tests.fixtures.fixture',
     'tests.fixtures.fixture_search_params',
     'tests.fixtures.fixture_search_results',
 ]

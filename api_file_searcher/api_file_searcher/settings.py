@@ -2,8 +2,12 @@ import os
 
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Root search directory.
 SEARCH_DIR = os.getenv(
@@ -22,10 +26,7 @@ OPERATOR = {
 ACCEPTED_OPERATORS = ('eq', 'gt', 'lt', 'ge', 'le')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv(
-    'SECRET_KEY',
-    default='django-insecure-o^63j%zp3w8c-ds$(+@hz@h4rtk4e$-%-8t@w9lkqc30u!o$0p',
-)
+SECRET_KEY = os.getenv('SECRET_KEY', default='123')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', default='False') == 'True'
