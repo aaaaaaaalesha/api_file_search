@@ -1,0 +1,29 @@
+### Пример корректного запроса: `[POST] /search`
+
+POST http://127.0.0.1:8000/search
+Content-Type: application/json
+
+{
+  "text": "std::",
+  "file_mask": "[!u]*.hpp",
+  "size": {
+    "value": 1213,
+    "operator": "gt"
+  },
+  "creation_time": {
+    "value": "2022-09-13T11:00:00Z",
+    "operator": "ge"
+  }
+}
+
+### Пример некорректного запроса: `[POST] /search`
+
+POST http://127.0.0.1:8000/search
+Content-Type: application/json
+
+{
+  "text": 1,
+  "file_mask": false,
+  "size": 10,
+  "creation_time": 10e-10
+}

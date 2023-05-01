@@ -1,0 +1,5 @@
+### Получить результаты поиска `[GET] /searches/<search_id>`
+### (заменить search_id на тот, что был получен в результате запроса [POST] /search)
+
+GET http://127.0.0.1:8000/searches/670d3bd8-e854-11ed-835a-d45d643cf57f
+Accept: application/json
